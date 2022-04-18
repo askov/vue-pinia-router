@@ -1,0 +1,12 @@
+version: "3.9"
+services:
+  server:
+    image: node:16
+    container_name: vue-experiments
+    user: node
+    working_dir: /home/node/app
+    volumes:
+      - .:/home/node/app
+    command: bash -c "yarn && yarn serve"
+    ports:
+      - 8080:8080
