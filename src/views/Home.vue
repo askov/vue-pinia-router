@@ -26,6 +26,7 @@
       <div style="background-color: palevioletred; flex-grow: 1">
         Ref object: <strong>{{ someRef }}</strong>
       </div>
+      <button type="button" @click="someRef = {}">Clear</button>
     </div>
 
     <div style="background-color: antiquewhite; margin-top: 20px">
@@ -63,10 +64,7 @@
 <script lang="ts">
 import { defineComponent, reactive, ref } from "vue";
 
-import {
-  useLocationQueryStore,
-  useReactiveQuery,
-} from "@/stores/locationQuery";
+import { useLocationQueryStore } from "@/stores/locationQuery";
 
 export default defineComponent({
   name: "Home",
@@ -88,8 +86,9 @@ export default defineComponent({
       myref: "myref_value",
     });
 
+    locationQueryStore.connectQuery([someRef]);
     // Connect parts to the router query
-    useReactiveQuery([obj1, obj2, someRef]);
+    // useReactiveQuery([obj1]);
 
     // Demo helpers
     const getObject = (num: number) => {

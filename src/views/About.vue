@@ -4,17 +4,19 @@
 </template>
 
 <script lang="ts">
-import { useReactiveQuery } from "@/stores/locationQuery";
+import { useLocationQueryStore } from "@/stores/locationQuery";
 import { defineComponent, reactive } from "vue";
 
 export default defineComponent({
   name: "About",
   setup() {
+    const { connectQuery } = useLocationQueryStore();
+
     const shadowGlobal = reactive({
       global: "local_global_value",
     });
 
-    useReactiveQuery([shadowGlobal]);
+    connectQuery([shadowGlobal]);
 
     return { shadowGlobal };
   },

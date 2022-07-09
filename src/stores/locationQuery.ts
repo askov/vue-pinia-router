@@ -7,7 +7,7 @@ export const useLocationQueryStore = defineStore("locationQuery", () => {
 
   // global query object, shared between pages (you can modify it or just shadow if needed)
   const locationQuery = reactive<LocationQueryRaw>({
-    global: 42,
+    // global: 42,
   });
 
   // Reactive objects collection
@@ -20,10 +20,26 @@ export const useLocationQueryStore = defineStore("locationQuery", () => {
     })
   );
 
-  // Router query setter
-  watch(accObj, (nextAccObj) => {
-    router.push({ query: { ...nextAccObj } });
+  // Prevent the router from being unsynchronised
+  router.beforeEach((to, from, next) => {
+    if (to.path === from.path && !Object.keys(to.query).length) {
+      console.log("SAME", from.query, to.query);
+      next({ ...to, query: { ...from.query } });
+    } else {
+      console.log("REGULAR", from.query, to.query);
+      next();
+    }
   });
+
+  // Router query setter
+  watch(
+    accObj,
+    (nextAccObj) => {
+      console.log("PUSH", nextAccObj);
+      router.push({ query: { ...nextAccObj } });
+    },
+    { deep: true }
+  );
 
   // Disconnect from reactive query
   const removeLocationQuery = (obj: LocationQueryRaw) => {
@@ -42,6 +58,20 @@ export const useLocationQueryStore = defineStore("locationQuery", () => {
     }
   };
 
+  // Objects (reactive) connector with autodiscconnect
+  // Using this you can connect local reactive objects to the query
+  const connectQuery = (
+    queries: (LocationQueryRaw | Ref<LocationQueryRaw>)[]
+  ): void => {
+    const locationQueryStore = useLocationQueryStore();
+
+    const disconnects = queries.map(locationQueryStore.addLocationQuery);
+
+    onUnmounted(() => {
+      disconnects.forEach((disconnect) => disconnect && disconnect());
+    });
+  };
+
   return {
     // Private API
     acc, // TODO: remove, this is for the demo only
@@ -50,19 +80,6 @@ export const useLocationQueryStore = defineStore("locationQuery", () => {
     removeLocationQuery, // this should be "protected", only for useReactiveQuery
     // Public API
     locationQuery, // global query object, shared between pages (you can modify it or just shadow if needed)
+    connectQuery,
   };
 });
-
-// Objects (reactive) connector with autodiscconnect
-// Using this you can connect local reactive objects to the query
-export const useReactiveQuery = (
-  queries: (LocationQueryRaw | Ref<LocationQueryRaw>)[]
-): void => {
-  const locationQueryStore = useLocationQueryStore();
-
-  const disconnects = queries.map(locationQueryStore.addLocationQuery);
-
-  onUnmounted(() => {
-    disconnects.forEach((disconnect) => disconnect && disconnect());
-  });
-};
